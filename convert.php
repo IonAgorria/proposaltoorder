@@ -19,7 +19,7 @@
 /**
  *  \file       convert.php
  *  \ingroup    proposaltoorder
- *  \brief      ProposalToOrder conversion code, receives the data from trigger popup
+ *  \brief      ProposalToOrder conversion code
  */
 
 //TODO: Copy dates
