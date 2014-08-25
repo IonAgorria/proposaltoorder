@@ -35,8 +35,6 @@ require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
 
-$booking_import = dol_include_once("/booking/class/booking_extra.class.php"); //Load BookingExtra for date handling
-
 if (! empty($conf->projet->enabled))
 {
     require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
@@ -139,10 +137,9 @@ function order_supplier_addline($db, $order_supplier, $product, $propal_line)
     $sql.= " fk_product, product_type,";
     $sql.= " qty, tva_tx, localtax1_tx, localtax2_tx, remise_percent, subprice, ref,";
     $sql.= " total_ht, total_tva, total_localtax1, total_localtax2, total_ttc,";
-    $sql.= " localtax1_type, localtax2_type";
+    $sql.= " localtax1_type, localtax2_type, date_start, date_end";
     $sql.= ") VALUES (".$fk_commande.", '" . $label . "','" . $desc . "',";
-    if ($fk_product) { $sql.= $fk_product.","; }
-    else { $sql.= "null,"; }
+    $sql.= (! empty($fk_product)?$fk_product:"null").',';
     $sql.= "'".$product_type."',";
     $sql.= "'".$qty."', ".$tva_tx.", ".$txlocaltax1.", ".$txlocaltax2.", ".$remise_percent.",'".$subprice."','".$ref."',";
     $sql.= "'".$total_ht."',";
@@ -151,7 +148,9 @@ function order_supplier_addline($db, $order_supplier, $product, $propal_line)
     $sql.= "'".$total_localtax2."',";
     $sql.= "'".$total_ttc."',";
     $sql.= "'".$localtax1_type."',";
-    $sql.= "'".$localtax2_type."'";
+    $sql.= "'".$localtax2_type."',";
+    $sql.= (! empty($propal_line->date_start)?"'".$db->idate($propal_line->date_start)."'":"null").',';
+    $sql.= (! empty($propal_line->date_end)?"'".$db->idate($propal_line->date_end)."'":"null");
     $sql.= ")";
 
     dol_syslog("order_supplier_addline sql=".$sql);
@@ -161,21 +160,6 @@ function order_supplier_addline($db, $order_supplier, $product, $propal_line)
     {
         $rowid = $db->last_insert_id(MAIN_DB_PREFIX.'commande_fournisseurdet');
         $order_supplier->rowid = $rowid;
-        if (!($booking_import < 0)) {
-            //Fix the date formatting
-            $chars = array(" ", "-", ":");
-            $date_start = str_replace($chars, "", $propal_line->date_start);
-            $date_end = str_replace($chars, "", $propal_line->date_end);
-            if (!empty($date_start) || !empty($date_end)) {
-                //The main copy has finished, now copy the dates too
-                $date_extra = new BookingExtra($db, 0); //0 indicates the object type as "order", 1 is "facture"
-                $date_extra->fk_ref_id                = $rowid;
-                $date_extra->fk_product_fournisseur   = $fk_product;
-                $date_extra->date_start               = $date_start;
-                $date_extra->date_end                 = $date_end;
-                $date_extra->create();
-            }
-        }
         // Trigger disabled because POST data is incomplete compared to original trigger and causes unpredictable behavior
         // if (! $notrigger)
         // {
