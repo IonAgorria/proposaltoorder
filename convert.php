@@ -83,10 +83,24 @@ function convert_propal($db, $propal_id) {
                 }
             }
         }
+        
+        $extrafields = new ExtraFields($db);
+        $extrafields->fetch_name_optionals_label('commande_fournisseur'); //Get extrafields of order
         foreach($created_orders as $fourn_socid => $order_id){
             $order_supplier = new CommandeFournisseur($db);
             $order_supplier->fetch($order_id);
             $order_supplier->update_price(); //Update the prices and stuff...
+
+            foreach($extrafields->attribute_label as $key=>$label)
+            {
+                 //Check if order extrafield has same value for propal and store in order if so
+                $value=$propal->array_options["options_".$key];
+                if (!empty($value)) {
+                    $order_supplier->array_options["options_".$key] = $value;
+                }
+            }
+            //Write array_options to db
+            $order_supplier->insertExtraFields();
         }
     }
 }
@@ -161,18 +175,6 @@ function order_supplier_addline($db, $order_supplier, $product, $propal_line)
         $rowid = $db->last_insert_id(MAIN_DB_PREFIX.'commande_fournisseurdet');
         $order_supplier->rowid = $rowid;
         // Trigger disabled because POST data is incomplete compared to original trigger and causes unpredictable behavior
-        // if (! $notrigger)
-        // {
-        //     global $conf, $langs, $user;
-        //     // Appel des triggers
-        //     include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
-        //     $interface=new Interfaces($db);
-        //     $result=$interface->run_triggers('LINEORDER_SUPPLIER_CREATE',$order_supplier,$user,$langs,$conf);
-        //     if ($result < 0) {
-        //         $error++; $errors=$interface->errors;
-        //     }
-        //     // Fin appel triggers
-        // }
         $db->commit();
         return 1;
     }
@@ -195,5 +197,7 @@ if ($id > 0 && $confirm == "yes" && $action == "convert" && !empty($return)) {
     convert_propal($db, $id);
 }
 $db->close();
-//Send the browser back where it came from
-print  '<script type="text/javascript">window.location = "'.$return.'?id='.$id.'";</script>';
+if (!empty($return)) {
+    //Send the browser back where it came from
+    print  '<script type="text/javascript">window.location = "'.$return.'?id='.$id.'";</script>';
+}
