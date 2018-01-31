@@ -1,0 +1,9 @@
+# Dolibarr language file - es_ES - Proposal To Order
+CHARSET=UTF-8
+
+Module674501Name=Presupuesto a pedido
+Module674501Desc=Convierte un presupuesto en un pedido dentro de un proyecto
+
+PopupTitle=Quieres convertir este presupuesto en pedido(s) para proveedor(es)?
+PopupContent=Esta accion creara un pedido por cada proveedor en este presupuesto y lo asociara a este proyecto
+ManualWarning=ATENCION: Este presupuesto contiene entradas de productos/servicios añadidas manualmente, desea continuar?

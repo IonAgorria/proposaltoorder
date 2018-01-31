@@ -1,0 +1,9 @@
+# Dolibarr language file - en_US - Proposal To Order
+CHARSET=UTF-8
+
+Module674501Name=Proposal to Order
+Module674501Desc=Converts a Proposal to Order inside a project
+
+PopupTitle=Do you want to convert this proposal to a order?
+PopupContent=This action will create a order for each supplier in this proposal and then link to this project
+ManualWarning=WARNING: This proposal has manually created product/service entries, do you want to continue?
